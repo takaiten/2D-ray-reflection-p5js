@@ -2,9 +2,6 @@ class Surface {
     constructor(Ax, Ay, Bx, By) {
         this.a = createVector(Ax, Ay);
         this.b = createVector(Bx, By);
-
-        this.transparency = 0.0;
-        this.refractive_index = 1;
     }
 
     show() {
@@ -21,8 +18,30 @@ class Surface {
     }
 }
 
-class Polygon {
-    constructor() {
+class Circle {
+    constructor(X, Y, radius, segments) {
+        this.lines = [];
+        this.radius = radius;
+        this.origin = createVector(X, Y);
 
+        const ang = 2 * PI / segments;
+        for (let a = 0; a < (2 * PI + ang); a += ang) {
+            this.lines.push(new Surface(this.origin.x + radius * cos(a), this.origin.y + radius * sin(a),
+                this.origin.x + radius * cos(a + ang), this.origin.y + radius * sin(a + ang)));
+        }
+    }
+
+    moveTo(X, Y) {
+        this.origin.set(X, Y);
+    }
+
+    show() {
+        for (let i = 0; i < this.lines.length - 1; i++) {
+            this.lines[i].show();
+        }
+    }
+
+    getSurfaceArray() {
+        return this.lines;
     }
 }

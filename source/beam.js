@@ -1,65 +1,105 @@
 class Beam {
-    constructor(pos, angle, bounces, length = 20) {
+    constructor(pos, angle, bounces) {
         this.ray = new Ray(pos, angle);
-
-        this.length = length;
-        this.energy = 255;
         this.bounces = bounces;
     }
 
-    lookAt(x, y) {
-        this.ray.dir.x = x - this.ray.origin.x;
-        this.ray.dir.y = y - this.ray.origin.y;
+    moveTo(X, Y) {
+        this.ray.origin.set(X, Y);
+    }
+    moveBy(X, Y) {
+        this.ray.origin.x += X;
+        this.ray.origin.y += Y;
+    }
+    lookAt(X, Y) {
+        this.ray.dir.x = X - this.ray.origin.x;
+        this.ray.dir.y = Y - this.ray.origin.y;
         this.ray.dir.normalize();
     }
+    rotate(speed) {
+        this.ray.dir.rotate(frameCount % (2 * PI) * 0.0001 * speed);
+    }
 
+    // shows origin and direction of ray
     show() {
-        this.ray.show(20, 'red');
-        ellipse(this.ray.origin.x, this.ray.origin.y, 10);
+        this.ray.show(10, 'red');
+        ellipse(this.ray.origin.x, this.ray.origin.y, 5);
         if (this.reflection) {
             this.reflection.show();
         }
     }
+    // find normal from ray origin to line
+    norm(bnds) {
+        const A = p5.Vector.sub(bnds.a, bnds.b);
+        const B = p5.Vector.sub(this.ray.origin, bnds.b);
+        const dp = A.dot(B);
+        const len = A.magSq();
 
-    intersect(bonds) {
-        let hit = false;
-        for (let bnd of bonds) {
-            const pt = this.ray.intersect(bnd);
+        const p = createVector(bnds.b.x + (dp * A.x) / len,
+            bnds.b.y + (dp * A.y) / len);
+
+        ellipse(p.x, p.y, 10);
+    }
+
+    getReflectionAngle(bound) {
+        // find the directional vector for bound
+        const diff = p5.Vector.sub(bound.a, bound.b).normalize();
+
+        // create normal vector
+        const normal = createVector(diff.y, -diff.x);
+
+        // determine if angle between normal and ray direction is more then PI
+        const sign = Math.sign(this.ray.dir.x * normal.y - this.ray.dir.y * normal.x);
+        let phi = PI + sign * acos(this.ray.dir.dot(normal));
+
+        return normal.heading() + phi;
+    }
+    reflectFrom(walls) {
+        let closest = null;
+        let record = Infinity;
+        for (let i = 0; i < walls.length; i++) {
+            const pt = this.ray.intersect(walls[i]);
             if (pt) {
-                hit = true;
-                let a, b, c, closest, sgn;
-                const AB = p5.Vector.dist(this.ray.origin, bnd.a);
-                const AD = p5.Vector.dist(this.ray.origin, bnd.b);
-
-                if (AB < AD) {
-                    c = AB;
-                    closest = bnd.a;
-                } else {
-                    c = AD;
-                    closest = bnd.b;
+                const d = p5.Vector.dist(this.ray.origin, pt);
+                if (d < record && d > 1e-10) {
+                    record = d;
+                    closest = {point: pt, wall: walls[i]};
                 }
-                a = p5.Vector.dist(pt, closest);
-                b = p5.Vector.dist(this.ray.origin, pt);
-
-                const cosPhi = (pow(a, 2) + pow(b, 2) - pow(c, 2)) / (2 * a * b);
-                sgn = cosPhi > 0 ? 1 : -1;
-                const phi = acos(cosPhi);
-                // const phi = acos((pow(a, 2) + pow(b, 2) - pow(c, 2)) / (2 * a * b));
-
-                if (this.bounces > 0) {
-                    print(this.bounces);
-                    this.reflection = new Beam(pt, this.ray.dir.heading() - sgn * 2 * phi, this.bounces - 1);
-                }
-                stroke(255);
-                line(this.ray.origin.x, this.ray.origin.y, pt.x, pt.y);
-                // ellipse(pt.x, pt.y, SHeight / 100);
             }
         }
-        if (!hit) {
+
+        if (closest) {
+            stroke(255);
+            line(this.ray.origin.x, this.ray.origin.y, closest.point.x, closest.point.y);
+
+            if (this.bounces > 0) {
+                this.reflection = new Beam(closest.point, this.getReflectionAngle(closest.wall), this.bounces - 1);
+                this.reflection.reflectFrom(walls);
+            }
+        } else {
             delete this.reflection;
         }
-        if (this.reflection) {
-            this.reflection.intersect(bonds);
+    }
+}
+
+class BeamArea {
+    constructor(pos, N, fov = 2 * PI, bounces = 1) {
+        this.beams = [];
+        this.origin = pos;
+        this.fov = fov;
+        let ang = this.fov / N;
+        for (let a = -this.fov / 2; a < this.fov / 2; a += ang) {
+            this.beams.push(new Beam(this.origin, a, bounces));
+        }
+    }
+
+    moveTo(X, Y) {
+        this.origin.set(X, Y);
+    }
+
+    reflect(bounds) {
+        for (const beam of this.beams) {
+            beam.reflect(bounds);
         }
     }
 }
