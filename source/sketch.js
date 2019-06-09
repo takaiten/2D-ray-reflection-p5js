@@ -8,10 +8,10 @@ function setup() {
     createCanvas(SWidth, SHeight);
     beam = new Beam(createVector(SWidth / 2, SHeight / 2), 0, 10);
 
-    walls.push(new Boundary(-1, -1, width + 1, -1));
-    walls.push(new Boundary(-1, -1, -1, height + 1));
-    walls.push(new Boundary(-1, height + 1, width + 1, height + 1));
-    walls.push(new Boundary(width + 1, -1, width + 1, height + 1));
+    walls.push(new Surface(-1, -1, width + 1, -1));
+    walls.push(new Surface(-1, -1, -1, height + 1));
+    walls.push(new Surface(-1, height + 1, width + 1, height + 1));
+    walls.push(new Surface(width + 1, -1, width + 1, height + 1));
 }
 
 function draw() {
