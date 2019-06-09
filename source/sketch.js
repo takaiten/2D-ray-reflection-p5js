@@ -20,7 +20,6 @@ function draw() {
 
     beam.lookAt(mouseX, mouseY);
     beam.reflectFrom(walls);
-
     for (let wall of walls) {
         wall.show();
     }
@@ -51,5 +50,7 @@ function Keys() {
 function keyPressed() {
     if (keyCode == 71) {
         walls.push(new Surface(random(0, SWidth), random(0, SHeight), random(0, SWidth), random(0, SHeight)));
+    } else if (keyCode == 72) {
+        walls.push(new Surface(random(0, SWidth), random(0, SHeight), random(0, SWidth), random(0, SHeight), random(0.6, 1)));
     }
 }

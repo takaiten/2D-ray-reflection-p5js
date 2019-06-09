@@ -1,7 +1,9 @@
 class Surface {
-    constructor(Ax, Ay, Bx, By) {
+    constructor(Ax, Ay, Bx, By, specular = 1) {
         this.a = createVector(Ax, Ay);
         this.b = createVector(Bx, By);
+
+        this.specular = specular;
     }
 
     show() {

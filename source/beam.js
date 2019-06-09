@@ -1,7 +1,8 @@
 class Beam {
-    constructor(pos, angle, bounces) {
+    constructor(pos, angle, bounces = 1, power = 255) {
         this.ray = new Ray(pos, angle);
         this.bounces = bounces;
+        this.power = power;
     }
 
     moveTo(X, Y) {
@@ -69,11 +70,11 @@ class Beam {
         }
 
         if (closest) {
-            stroke(255);
+            stroke(this.power, 220);
             line(this.ray.origin.x, this.ray.origin.y, closest.point.x, closest.point.y);
 
             if (this.bounces > 0) {
-                this.reflection = new Beam(closest.point, this.getReflectionAngle(closest.wall), this.bounces - 1);
+                this.reflection = new Beam(closest.point, this.getReflectionAngle(closest.wall), this.bounces - 1, int(this.power * closest.wall.specular));
                 this.reflection.reflectFrom(walls);
             }
         } else {
@@ -97,9 +98,9 @@ class BeamArea {
         this.origin.set(X, Y);
     }
 
-    reflect(bounds) {
+    reflectFrom(walls) {
         for (const beam of this.beams) {
-            beam.reflect(bounds);
+            beam.reflectFrom(walls);
         }
     }
 }
