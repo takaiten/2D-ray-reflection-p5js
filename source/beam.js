@@ -70,8 +70,8 @@ class Beam {
         }
 
         if (closest) {
-            stroke(this.power, 220);
-            line(this.ray.origin.x, this.ray.origin.y, closest.point.x, closest.point.y);
+            // stroke(this.power, 220);
+            dottedLine(this.ray.origin, closest.point, this.power);
 
             if (this.bounces > 0) {
                 this.reflection = new Beam(closest.point, this.getReflectionAngle(closest.wall), this.bounces - 1, int(this.power * closest.wall.specular));

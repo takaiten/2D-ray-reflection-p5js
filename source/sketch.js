@@ -3,10 +3,12 @@ const SWidth = 800,
 
 let beam;
 let walls = [];
+let ball;
 
 function setup() {
     createCanvas(SWidth, SHeight);
-    beam = new Beam(createVector(SWidth / 2, SHeight / 2), 0, 10);
+    beam = new Beam(createVector(SWidth / 2, SHeight / 2), PI/3, 10);
+    ball = new Trace(SWidth/2, SHeight/2, 25, 10);
 
     walls.push(new Surface(-1, -1, width + 1, -1));
     walls.push(new Surface(-1, -1, -1, height + 1));
@@ -17,8 +19,11 @@ function setup() {
 function draw() {
     Keys();
     background(0);
+    // ball.animate(SWidth/2, SHeight/2, mouseX, mouseY,);
+    // ball.show();
 
     beam.lookAt(mouseX, mouseY);
+    // beam.rotate(50);
     beam.reflectFrom(walls);
     for (let wall of walls) {
         wall.show();
