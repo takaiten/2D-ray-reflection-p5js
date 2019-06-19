@@ -2,7 +2,6 @@ class Beam {
     constructor(pos, angle, bounces = 1, power = 255) {
         this.ray = new Ray(pos, angle);
         this.bounces = bounces;
-		this.initBounces = bounces;
         this.power = power;
     }
 
@@ -22,7 +21,6 @@ class Beam {
         this.ray.dir.rotate(frameCount % (2 * PI) * 0.0001 * speed);
     }
 
-    // shows origin and direction of ray
     show() {
         this.ray.show(10, 'red');
         ellipse(this.ray.origin.x, this.ray.origin.y, 5);
@@ -30,17 +28,15 @@ class Beam {
             this.reflection.show();
         }
     }
-    // find normal from ray origin to line
-    norm(bnds) {
-        const A = p5.Vector.sub(bnds.a, bnds.b);
-        const B = p5.Vector.sub(this.ray.origin, bnds.b);
-        const dp = A.dot(B);
-        const len = A.magSq();
-
-        const p = createVector(bnds.b.x + (dp * A.x) / len,
-            bnds.b.y + (dp * A.y) / len);
-
-        ellipse(p.x, p.y, 10);
+    showTrajectory() {
+        if (this.closest){
+            line(this.ray.origin.x, this.ray.origin.y, this.closest.x, this.closest.y);
+        }
+    }
+    showDottedTrajectory() {
+        if (this.closest){
+            dottedLine(this.ray.origin, this.closest);
+        }
     }
 
     getReflectionAngle(bound) {
@@ -56,7 +52,6 @@ class Beam {
 
         return normal.heading() + phi;
     }
-	
     reflectFrom(walls) {
         let closest = null;
         let record = Infinity;
@@ -72,9 +67,8 @@ class Beam {
         }
 
         if (closest) {
-            // stroke(this.power, 220);
-            //dottedLine(this.ray.origin, closest.point, this.power);
-			
+            this.closest = closest;
+
             if (this.bounces > 0) {
                 this.reflection = new Beam(closest.point, this.getReflectionAngle(closest.wall), this.bounces - 1, int(this.power * closest.wall.specular));
                 this.reflection.reflectFrom(walls);
@@ -82,6 +76,16 @@ class Beam {
         } else {
             delete this.reflection;
         }
+    }
+
+    getRay() {
+        return this.ray;
+    }
+    getReflectionRay() {
+        return this.reflection;
+    }
+    getClosest() {
+        return this.closest;
     }
 }
 
