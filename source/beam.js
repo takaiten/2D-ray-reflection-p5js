@@ -2,6 +2,7 @@ class Beam {
     constructor(pos, angle, bounces = 1, power = 255) {
         this.ray = new Ray(pos, angle);
         this.bounces = bounces;
+		this.initBounces = bounces;
         this.power = power;
     }
 
@@ -55,6 +56,7 @@ class Beam {
 
         return normal.heading() + phi;
     }
+	
     reflectFrom(walls) {
         let closest = null;
         let record = Infinity;
@@ -62,7 +64,7 @@ class Beam {
             const pt = this.ray.intersect(walls[i]);
             if (pt) {
                 const d = p5.Vector.dist(this.ray.origin, pt);
-                if (d < record && d > 1e-10) {
+                if (d < record && d > 1e-5) {
                     record = d;
                     closest = {point: pt, wall: walls[i]};
                 }
@@ -71,8 +73,8 @@ class Beam {
 
         if (closest) {
             // stroke(this.power, 220);
-            dottedLine(this.ray.origin, closest.point, this.power);
-
+            //dottedLine(this.ray.origin, closest.point, this.power);
+			
             if (this.bounces > 0) {
                 this.reflection = new Beam(closest.point, this.getReflectionAngle(closest.wall), this.bounces - 1, int(this.power * closest.wall.specular));
                 this.reflection.reflectFrom(walls);

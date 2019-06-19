@@ -46,9 +46,45 @@ const dottedLine = (A, B, color = 255, radius = height / 300, padding = 5) => {
     pop();
 };
 
+class Ball {
+	constructor(X, Y, angle, speed = 10) {
+		this.origin = createVector(X, Y);
+		this.trace = new Trace(this.origin, SHeight/40, 5);
+		this.beam = new Beam(this.origin, angle);
+		this.speed = speed;
+	}
+	
+	show() {
+		//colorMode(HSB, 100);
+		fill(frameCount%255, 255, 255);
+		this.trace.show();
+	}
+
+	set(X, Y) {
+		this.origin.set(X, Y);
+	}
+	
+	setAngle(X, Y) {
+		this.beam.lookAt(X, Y);
+	}
+	
+	throwAt(walls) {
+		this.beam.reflectFrom(walls);
+		if (this.beam.reflection) {
+			const bool = this.trace.animateTo(this.beam.reflection.ray.origin.x, this.beam.reflection.ray.origin.y, this.speed, this.speed);
+			if (bool) {
+				//this.speed /= 1.1;
+				this.origin = this.beam.reflection.ray.origin;
+				this.beam.ray.dir = this.beam.reflection.ray.dir;
+				delete this.beam.reflection;
+			}
+		}
+	}
+}
+
 class Trace {
-    constructor(x, y, radius, N = 5) {
-        this.origin = createVector(x, y);
+    constructor(origin, radius, N = 5) {
+        this.origin = origin;
         this.dir = createVector(0, 0);
         this.mag = 0;
 
@@ -60,10 +96,9 @@ class Trace {
 
     show() {
         noStroke();
-        fill(255);
         ellipse(this.origin.x, this.origin.y, this.r);
         for (let i = 1; i < this.n + 1; i++) {
-            fill(255, 255 / (i / 2));
+            //fill(255, 255 / (i / 2));
             ellipse(this.origin.x - this.dir.x * (this.mag * i), this.origin.y - this.dir.y * (this.mag * i), this.r * (this.n - (i)) / this.n);
         }
     }
@@ -77,11 +112,15 @@ class Trace {
         this.origin.set(X, Y);
     }
 
-    animate(x1, y1, x2, y2, speed = 10) {
+	animateTo(X, Y, eps, speed = 10) {
+		return this.animate(this.origin.x, this.origin.y, X, Y, eps + 1, speed);
+	}
+	
+    animate(x1, y1, x2, y2, eps, speed = 10) {
         if (this.a) {
             this.a.add(this.pointing);
             this.moveTo(this.a.x, this.a.y);
-            if (abs(this.a.x - this.b.x) < 5 && abs(this.a.y - this.b.y) < 5) {
+            if (abs(this.a.x - this.b.x) < eps && abs(this.a.y - this.b.y) < eps) {
                 print('reached');
                 delete this.a;
                 return true;
